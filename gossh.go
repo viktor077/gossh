@@ -180,13 +180,13 @@ func (c *Client) Exec(cmd string) (string, error) {
 // Испольуется для отправки непечатаемых символов, наприер Enter (0x13), Backspace (0x8), Tab (0x09) и т.д. и контрольны команд
 // например Ctrl-X, Ctrl-Z и т.д.
 // Если receiveBuffer указан, в receiveBuffer будет записан ответ сервера.
-func (c *Client) Send(cmd []byte, waitAnswer bool) (*[]byte, error) {
+func (c *Client) Send(cmd []byte, waitAnswer bool) ([]byte, error) {
 	err := c.send(cmd, waitAnswer)
 	if err != nil {
 		return nil, err
 	}
 
-	return &c.resp, nil
+	return c.resp, nil
 }
 
 func (c *Client) send(cmd []byte, waitAnswer bool) error {
@@ -242,7 +242,15 @@ func (c *Client) receive(receiveBuffer *[]byte) {
 func (c *Client) matchInputPrompt(buf []byte) bool {
 	row := strings.TrimSpace(string(buf))
 
-	for _, v := range INPUT_PROMPT {
+	var input_prompt []string
+
+	if len(c.custom.InputPrompt) == 0 {
+		input_prompt = c.custom.InputPrompt
+	} else {
+		input_prompt = INPUT_PROMPT
+	}
+
+	for _, v := range input_prompt {
 		reg := regexp.MustCompile(v)
 		if reg.MatchString(row) {
 			return true
