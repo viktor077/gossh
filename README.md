@@ -1,9 +1,9 @@
 # gossh
 
-Обертка над стандартной go билиотекой для работы с ssh.
-Основная особенность - это работа в одной сессии в режиме Shell (после выполнения удаленной команды, сессия не закрывается).
+Wrapper over the standard go library for working with ssh.
+The main feature is the work in one session in Shell mode (after executing a remote command, the session is not closed).
 
-Подключиться можно с паролем и приватным клчом.
+You can connect with a password and a private key.
 ```
 client := gossh.NewClient()
 err = client.ConnectWithPrivateKey("127.0.0.1", "22", "viktor077", key, "12345")
@@ -12,7 +12,7 @@ if err != nil {
 }
 ```
 
-Перед подключением можно добавить недостающие методы шифрования 
+You can add missing encryption methods before connecting
 ```
 client.Config(&gossh.Config{
 	KeyExchanges: []string{
@@ -26,32 +26,32 @@ client.Config(&gossh.Config{
 	},
 })
 ```
-Для выполнения удаленных команд есть два метода **Exec** и **Run**
+There are two methods for executing remote commands **Exec** and **Run**
 
-**Exec** отправляет команду и всегда ждет ответ.
+**Exec** sends a command and always waits for a response.
 ```
 uname, _ := client.Exec("uname -a")
 fmt.Println(uname)
 ```    
-**Run** необходимо указать ждать ли ответа.
+**Run** you need to specify whether to wait for a response.
 ```
 client.Send([]byte("uname -a"), false)
 uname,_:=client.Send([]byte{KB_Enter}, true)
 fmt.Println(uname)
 ```
-Ждать ответа следует только в случае, если после отправки должен прийти ответ. В противном случае канал приема будет заблокирован.
+You should wait for a response only if a response should come after sending. Otherwise, the receive channel will be blocked.
 ```
-client.Send([]byte("uname -a"), true) // выполнение приведет к блокировке канала
+client.Send([]byte("uname -a"), true) // execution will block the channel
 uname,_:=client.Send([]byte{KB_Enter}, true)
 fmt.Println(string(uname))
 ```
 
-Исполнение команды определяется поиском приглашения к вводу с помощью регулярных выражений. Два регулярных выражения предопределены:
+Command execution is determined by searching for an input prompt using regular expressions. Two regular expressions are predefined.
 ```
 `^(?:<|\[)[\w\d\_\-\.\|\/]+(?:>|])$`, //huawei switch
 `^.*[\w\d@-]+:[\/\w\d-_~]+\s*\$\s*`,  //bash
 ```    
-Изменить регулярное выражение можно так же как и методы шифрования.
+You can change the regular expression in the same way as the encryption methods.
 ```
 client.Config(&gossh.Config{
 	InputPrompt: []string{"^viktor077@laptop:.*\$"},
