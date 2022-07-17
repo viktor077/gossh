@@ -18,7 +18,7 @@ type netHost struct {
 }
 
 var (
-	addr = flag.String("addr", "127.0.0.1", "ip address to connect. A few addresses can be ")
+	addr = flag.String("addr", "127.0.0.1", "ip address to connect. Сan be specify several ip addresses separated by a space or the path to the list")
 	cmd  = flag.String("cmd", "", "commands to execute")
 )
 
@@ -35,7 +35,7 @@ func main() {
 	for _, host := range hosts {
 		wg.Add(1)
 
-		go func() {
+		go func(host *netHost) {
 			sw := gossh.NewClient()
 			sw.Config(&gossh.Config{
 				InputPrompt: []string{`\b\w+@[\w\d-]+:.*\$`},
@@ -58,7 +58,7 @@ func main() {
 			}
 
 			wg.Done()
-		}()
+		}(&host)
 	}
 
 	wg.Wait()
